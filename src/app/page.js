@@ -118,6 +118,41 @@ export default function SolarDashboard() {
     return `${day}-${month}`; // return in dd-mm format
   }
 
+  // --- Subcomponents for cleaner code ---
+
+function ForecastPill({ time, weather, temp, icon, output }) {
+  return (
+    <div className="flex flex-col items-center">
+      <div className="bg-gray-200 rounded-full py-4 px-1 w-full flex flex-col items-center justify-center space-y-1 h-32">
+        <span className="text-xs font-bold text-slate-900">{time}</span>
+        <div className="flex flex-col items-center my-1">
+          {icon}
+          <span className="text-xs font-bold text-slate-900">{weather}</span>
+        </div>
+        <span className="text-xs font-bold text-slate-900">{temp}</span>
+      </div>
+      <div className="mt-2 text-center leading-tight">
+        <span className="text-[10px] font-medium text-slate-800 block">{output}</span>
+        <span className="text-[10px] font-medium text-slate-800 block">Solar</span>
+        <span className="text-[10px] font-medium text-slate-800 block">Output</span>
+      </div>
+    </div>
+  );
+}
+
+function NavIcon({ icon, isActive, onClick }) {
+  return (
+    <button 
+      onClick={onClick}
+      className={`transition-colors duration-200 ${
+        isActive ? 'text-black stroke-[2.5px]' : 'text-slate-500 hover:text-slate-700'
+      }`}
+    >
+      {icon}
+    </button>
+  );
+}
+
 
 
   return (
@@ -282,40 +317,5 @@ export default function SolarDashboard() {
         </div>
       </nav>
     </div>
-  );
-}
-
-// --- Subcomponents for cleaner code ---
-
-function ForecastPill({ time, weather, temp, icon, output }) {
-  return (
-    <div className="flex flex-col items-center">
-      <div className="bg-gray-200 rounded-full py-4 px-1 w-full flex flex-col items-center justify-center space-y-1 h-32">
-        <span className="text-xs font-bold text-slate-900">{time}</span>
-        <div className="flex flex-col items-center my-1">
-          {icon}
-          <span className="text-xs font-bold text-slate-900">{weather}</span>
-        </div>
-        <span className="text-xs font-bold text-slate-900">{temp}</span>
-      </div>
-      <div className="mt-2 text-center leading-tight">
-        <span className="text-[10px] font-medium text-slate-800 block">{output}</span>
-        <span className="text-[10px] font-medium text-slate-800 block">Solar</span>
-        <span className="text-[10px] font-medium text-slate-800 block">Output</span>
-      </div>
-    </div>
-  );
-}
-
-function NavIcon({ icon, isActive, onClick }) {
-  return (
-    <button 
-      onClick={onClick}
-      className={`transition-colors duration-200 ${
-        isActive ? 'text-black stroke-[2.5px]' : 'text-slate-500 hover:text-slate-700'
-      }`}
-    >
-      {icon}
-    </button>
   );
 }
