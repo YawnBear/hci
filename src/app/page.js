@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { 
   Home, 
   Activity, 
@@ -10,11 +10,81 @@ import {
   Zap, 
   Image as ImageIcon, 
   Sun, 
-  CloudRain 
+  CloudRain,
+  CloudLightning,
+  Haze
 } from 'lucide-react';
 
 export default function SolarDashboard() {
+  const [selectedData, setSelectedData] = useState([]);
+  const [city, setCity] = useState("Subang Jaya");
   const [activeTab, setActiveTab] = useState('home');
+  // Mapping object
+  const weatherMap = {
+    "Berjerebu": "Hazy",
+    "Tiada hujan": "Sunny",
+    "Hujan": "Rain",
+    "Hujan di beberapa tempat": "Rain",
+    "Hujan di satu dua tempat": "Rain",
+    "Hujan di satu dua tempat di kawasan pantai": "Rain",
+    "Hujan di satu dua tempat di kawasan pedalaman": "Rain",
+    "Ribut petir": "Thunderstorms",
+    "Ribut petir di beberapa tempat": "Thunderstorms",
+    "Ribut petir di beberapa tempat di kawasan pedalaman": "Thunderstorms",
+    "Ribut petir di satu dua tempat": "Thunderstorms",
+    "Ribut petir di satu dua tempat di kawasan pantai": "Thunderstorms",
+    "Ribut petir di satu dua tempat di kawasan pedalaman": "Thunderstorms"
+  };
+
+  const iconMap = {
+    "Sunny": <Sun className="w-4 h-4 mb-1" />,
+    "Rain": <CloudRain className="w-4 h-4 mb-1" />,
+    "Thunderstorms": <CloudLightning className="w-4 h-4 mb-1" />,
+    "Hazy": <Haze className="w-4 h-4 mb-1" />
+  };
+
+  const solarMap = {
+    "Hazy": "Medium Solar Output",
+    "Sunny": "High Solar Output",
+    "Rain": "Low Solar Output",
+    "Thunderstorms": "Low Solar Output"
+  }
+
+  useEffect(() => {
+    async function fetchWeather() {
+      const res = await fetch(`/api/weather?location_name=${encodeURIComponent(city)}`);
+      const data = await res.json();
+      if (data.success) {
+        console.log(data.data);
+        const selected = data.data.filter(
+          item => item.location.location_name.toLowerCase() === city.toLowerCase()
+        );
+        const lastObject = selected[selected.length - 1];
+        console.log(lastObject);
+        setSelectedData(lastObject);
+      } else {
+        console.error(data.error);
+      }
+    }
+    fetchWeather();
+  }, [city]);
+
+  // Function to translate
+  function translateWeather(description) {
+    return weatherMap[description] || description; // fallback to original if not found
+  }
+
+  function translateIcon(description) {
+    return iconMap[translateWeather(description)] || description; // fallback to original if not found
+  }
+
+  function formatDateToDayMonth(dateString) {
+    // Example input: "2025-12-11"
+    const [year, month, day] = dateString.split("-"); // split the string by "-"
+    return `${day}-${month}`; // return in dd-mm format
+  }
+
+
 
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900 pb-24">
@@ -47,12 +117,13 @@ export default function SolarDashboard() {
                   cx="96"
                   cy="96"
                   r="80"
-                  stroke="white"
+                  stroke="grey"
                   strokeWidth="12"
                   fill="transparent"
                   strokeDasharray={502}
                   strokeDashoffset={502 - (502 * 0.7)}
                   className="transition-all duration-1000 ease-out"
+                  transform="rotate(180 96 96)"
                   strokeLinecap="round"
                 />
               </svg>
@@ -95,37 +166,37 @@ export default function SolarDashboard() {
 
         {/* AI Estimation Section */}
         <section className="bg-gray-200 rounded-xl p-5">
-          <h2 className="text-lg font-medium text-slate-800 mb-4">AI Estimation</h2>
+          <h2 className="text-lg font-medium text-slate-800 mb-4">Weather Forecast {selectedData?.date ? formatDateToDayMonth(selectedData.date) : ""}</h2>
           
           {/* White Card Container */}
           <div className="bg-white rounded-2xl p-4">
             <div className="grid grid-cols-4 gap-2">
               <ForecastPill 
-                time="12:00" 
-                weather="Sunny" 
+                time="08:00" 
+                // weather={translateWeather(selectedData.morning_forecast) || "Sunny"}
                 temp="25 °C" 
-                icon={<Sun className="w-4 h-4 mb-1" />}
+                icon={translateIcon(translateWeather(selectedData.morning_forecast)) || <Sun className="w-4 h-4 mb-1" />}
                 output="High"
               />
               <ForecastPill 
-                time="14:00" 
-                weather="Rain" 
+                time="12:00" 
+                // weather={translateWeather(selectedData.afternoon_forecast) || "Thunderstorms"} 
                 temp="21 °C" 
-                icon={<CloudRain className="w-4 h-4 mb-1" />}
+                icon={translateIcon(translateWeather(selectedData.afternoon_forecast)) || <CloudRain className="w-4 h-4 mb-1" />}
                 output="Low"
               />
               <ForecastPill 
                 time="16:00" 
-                weather="Rain" 
+                // weather={translateWeather(selectedData.summary_forecast) || "Thunderstorms"} 
                 temp="20 °C" 
-                icon={<CloudRain className="w-4 h-4 mb-1" />}
+                icon={translateIcon(translateWeather(selectedData.summary_forecast)) || <CloudRain className="w-4 h-4 mb-1" />}
                 output="Low"
               />
               <ForecastPill 
-                time="18:00" 
-                weather="Rain" 
+                time="20:00" 
+                // weather={translateWeather(selectedData.night_forecast) || "Rain"} 
                 temp="22 °C" 
-                icon={<CloudRain className="w-4 h-4 mb-1" />}
+                icon={translateIcon(translateWeather(selectedData.night_forecast)) || <CloudLightning className="w-4 h-4 mb-1" />}
                 output="Low"
               />
             </div>
@@ -184,6 +255,7 @@ function ForecastPill({ time, weather, temp, icon, output }) {
           {/* We simulate the icon/text combo */}
           {/* <span className="text-[10px] font-semibold">{weather}</span> */}
           {/* The image shows bold text like 'Sunny' or 'Rain' */}
+          {icon}
           <span className="text-xs font-bold text-slate-900">{weather}</span>
         </div>
         <span className="text-xs font-bold text-slate-900">{temp}</span>
