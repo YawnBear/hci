@@ -1,3 +1,5 @@
+import { NextResponse } from "next/server";
+
 export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
@@ -12,12 +14,12 @@ export async function GET(request) {
 
         const data = await response.json();
 
-        return Response.json({
+        return NextResponse.json({
             success: true,
             data: data      // ← this is the whole file
         });
     } catch (error) {
-        return Response.json(
+        return NextResponse.json(
             { success: false, error: error.message },
             { status: 500 }
         );
