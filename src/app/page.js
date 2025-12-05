@@ -12,13 +12,17 @@ import {
   Sun, 
   CloudRain,
   CloudLightning,
-  Haze
+  Haze,
+  Loader2
 } from 'lucide-react';
 
 export default function SolarDashboard() {
   const [selectedData, setSelectedData] = useState([]);
   const [city, setCity] = useState("Subang Jaya");
   const [activeTab, setActiveTab] = useState('home');
+  const [solarEstimate, setSolarEstimate] = useState("Estimated Solar Output: Calculating...");
+  const [loadingEstimate, setLoadingEstimate] = useState(false);
+
   // Mapping object
   const weatherMap = {
     "Berjerebu": "Hazy",
@@ -68,6 +72,36 @@ export default function SolarDashboard() {
     }
     fetchWeather();
   }, [city]);
+
+  useEffect(() => {
+    async function getSolarEstimate() {
+      if (!selectedData) return;
+
+      setLoadingEstimate(true);
+      try {
+        const res = await fetch('/api/solar-estimate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            weatherData: selectedData,
+            city: city 
+          })
+        });
+        
+        const data = await res.json();
+        if (data.estimate_text) {
+          setSolarEstimate(data.estimate_text);
+        }
+      } catch (error) {
+        console.error("Gemini Estimate Error:", error);
+        setSolarEstimate("Estimated Solar Output: Unavailable");
+      } finally {
+        setLoadingEstimate(false);
+      }
+    }
+
+    getSolarEstimate();
+  }, [selectedData, city]);
 
   // Function to translate
   function translateWeather(description) {
@@ -202,10 +236,17 @@ export default function SolarDashboard() {
             </div>
           </div>
 
-          <div className="mt-4 text-left">
-             <p className="text-xs text-slate-600 font-medium">
-               Estimated Solar Output: 30-40% of a clear-day potential
-             </p>
+          <div className="mt-4 text-left min-h-[1.5rem] flex items-center">
+             {loadingEstimate ? (
+                <div className="flex items-center space-x-2 text-xs text-slate-600 font-medium">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  <span>Analyzing weather data...</span>
+                </div>
+             ) : (
+                <p className="text-xs text-slate-600 font-medium">
+                  {solarEstimate}
+                </p>
+             )}
           </div>
         </section>
       </main>
@@ -252,9 +293,6 @@ function ForecastPill({ time, weather, temp, icon, output }) {
       <div className="bg-gray-200 rounded-full py-4 px-1 w-full flex flex-col items-center justify-center space-y-1 h-32">
         <span className="text-xs font-bold text-slate-900">{time}</span>
         <div className="flex flex-col items-center my-1">
-          {/* We simulate the icon/text combo */}
-          {/* <span className="text-[10px] font-semibold">{weather}</span> */}
-          {/* The image shows bold text like 'Sunny' or 'Rain' */}
           {icon}
           <span className="text-xs font-bold text-slate-900">{weather}</span>
         </div>
