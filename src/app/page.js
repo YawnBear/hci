@@ -48,10 +48,10 @@ export default function SolarDashboard() {
   };
 
   const solarMap = {
-    "Hazy": "Medium Solar Output",
-    "Sunny": "High Solar Output",
-    "Rain": "Low Solar Output",
-    "Thunderstorms": "Low Solar Output"
+    "Hazy": "Medium",
+    "Sunny": "High",
+    "Rain": "Low",
+    "Thunderstorms": "Low"
   }
 
   useEffect(() => {
@@ -116,6 +116,10 @@ export default function SolarDashboard() {
     // Example input: "2025-12-11"
     const [year, month, day] = dateString.split("-"); // split the string by "-"
     return `${day}-${month}`; // return in dd-mm format
+  }
+
+  function translateSolarOutput(description) {
+    return solarMap[translateWeather(description)] || description; // fallback to original if not found
   }
 
   // --- Subcomponents for cleaner code ---
@@ -245,28 +249,28 @@ function NavIcon({ icon, isActive, onClick }) {
                 // weather={translateWeather(selectedData.morning_forecast) || "Sunny"}
                 temp="25 °C" 
                 icon={translateIcon(translateWeather(selectedData.morning_forecast)) || <Sun className="w-4 h-4 mb-1" />}
-                output="High"
+                output={translateSolarOutput(selectedData.morning_forecast) || "High"}
               />
               <ForecastPill 
                 time="12:00" 
                 // weather={translateWeather(selectedData.afternoon_forecast) || "Thunderstorms"} 
                 temp="21 °C" 
                 icon={translateIcon(translateWeather(selectedData.afternoon_forecast)) || <CloudRain className="w-4 h-4 mb-1" />}
-                output="Low"
+                output={translateSolarOutput(selectedData.afternoon_forecast) || "Low"}
               />
               <ForecastPill 
                 time="16:00" 
                 // weather={translateWeather(selectedData.summary_forecast) || "Thunderstorms"} 
                 temp="20 °C" 
                 icon={translateIcon(translateWeather(selectedData.summary_forecast)) || <CloudRain className="w-4 h-4 mb-1" />}
-                output="Low"
+                output={translateSolarOutput(selectedData.summary_forecast) || "Low"}
               />
               <ForecastPill 
                 time="20:00" 
                 // weather={translateWeather(selectedData.night_forecast) || "Rain"} 
                 temp="22 °C" 
                 icon={translateIcon(translateWeather(selectedData.night_forecast)) || <CloudLightning className="w-4 h-4 mb-1" />}
-                output="Low"
+                output={translateSolarOutput(selectedData.night_forecast) || "Low"}
               />
             </div>
           </div>
