@@ -229,8 +229,8 @@ function NavIcon({ icon, isActive, onClick }) {
                   <span className="text-sm font-bold text-slate-900">949kwh</span>
                   <span className="text-xs font-medium text-green-600">Good</span>
                 </div>
-                <div className="bg-black rounded-md p-1.5">
-                  <ImageIcon className="w-5 h-5 text-white" />
+                <div className="bg-white rounded-md p-1.5">
+                  <img src={`/solarPanel.png`} alt={`Panel ${panelId}`} className="ml-3 w-17 h-10" />
                 </div>
               </div>
             ))}
@@ -239,7 +239,7 @@ function NavIcon({ icon, isActive, onClick }) {
 
         {/* AI Estimation Section */}
         <section className="bg-gray-200 rounded-xl p-5">
-          <h2 className="text-lg font-medium text-slate-800 mb-4">Weather Forecast {selectedData?.date ? formatDateToDayMonth(selectedData.date) : ""}</h2>
+          <h2 className="text-lg font-medium text-slate-800 mb-4">{city} Weather @{selectedData?.date ? formatDateToDayMonth(selectedData.date) : ""}</h2>
           
           {/* White Card Container */}
           <div className="bg-white rounded-2xl p-4">
