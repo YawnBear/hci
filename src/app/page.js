@@ -15,6 +15,10 @@ import {
   Haze,
   Loader2
 } from 'lucide-react';
+import Thunderstorms from './components/thunderstorms';
+import Rain from './components/rain';
+import Sunny from './components/sunny';
+import Hazy from './components/hazy';
 
 export default function SolarDashboard() {
   const [selectedData, setSelectedData] = useState([]);
@@ -41,10 +45,10 @@ export default function SolarDashboard() {
   };
 
   const iconMap = {
-    "Sunny": <Sun className="w-4 h-4 mb-1" />,
-    "Rain": <CloudRain className="w-4 h-4 mb-1" />,
-    "Thunderstorms": <CloudLightning className="w-4 h-4 mb-1" />,
-    "Hazy": <Haze className="w-4 h-4 mb-1" />
+    "Sunny": <Sunny className="w-4 h-4 mb-1" />,
+    "Rain": <Rain className="w-4 h-4 mb-1" />,
+    "Thunderstorms": <Thunderstorms className="w-4 h-4 mb-1" />,
+    "Hazy": <Hazy className="w-4 h-4 mb-1" />
   };
 
   const solarMap = {
@@ -127,7 +131,7 @@ export default function SolarDashboard() {
 function ForecastPill({ time, weather, temp, icon, output }) {
   return (
     <div className="flex flex-col items-center">
-      <div className="bg-gray-200 rounded-full py-4 px-1 w-full flex flex-col items-center justify-center space-y-1 h-32">
+      <div className="bg-gray-300 rounded-full py-4 px-1 w-full flex flex-col items-center justify-center space-y-1 h-32">
         <span className="text-xs font-bold text-slate-900">{time}</span>
         <div className="flex flex-col items-center my-1">
           {icon}
@@ -168,7 +172,7 @@ function NavIcon({ icon, isActive, onClick }) {
 
       <main className="px-5 space-y-6">
         {/* Electricity Section */}
-        <section className="bg-gray-200 rounded-xl p-5 relative overflow-hidden">
+        <section className="bg-gray-300 rounded-xl p-5 relative overflow-hidden">
           <h2 className="text-lg font-medium text-slate-800 mb-2">Electricity</h2>
           
           <div className="flex justify-center items-center py-4">
@@ -207,7 +211,7 @@ function NavIcon({ icon, isActive, onClick }) {
               </div>
 
               {/* Lightning Icon Badge */}
-              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-2 bg-gray-200 border-4 border-gray-200 rounded-full p-2">
+              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-2 bg-gray-300 border-4 border-gray-200 rounded-full p-2">
                 <div className="bg-slate-800 rounded-full p-1">
                    {/* Using slate-800 to contrast with the light icon, or purely black like image */}
                    <Zap className="w-5 h-5 text-white fill-current" />
@@ -218,7 +222,7 @@ function NavIcon({ icon, isActive, onClick }) {
         </section>
 
         {/* Panel Condition Section */}
-        <section className="bg-gray-200 rounded-xl p-5">
+        <section className="bg-gray-300 rounded-xl p-5">
           <h2 className="text-lg font-medium text-slate-800 mb-4">Panel Condition</h2>
           
           <div className="grid grid-cols-2 gap-4">
@@ -238,7 +242,7 @@ function NavIcon({ icon, isActive, onClick }) {
         </section>
 
         {/* AI Estimation Section */}
-        <section className="bg-gray-200 rounded-xl p-5">
+        <section className="bg-gray-300 rounded-xl p-5">
           <h2 className="text-lg font-medium text-slate-800 mb-4">{city} Weather @{selectedData?.date ? formatDateToDayMonth(selectedData.date) : ""}</h2>
           
           {/* White Card Container */}
@@ -248,28 +252,28 @@ function NavIcon({ icon, isActive, onClick }) {
                 time="08:00" 
                 // weather={translateWeather(selectedData.morning_forecast) || "Sunny"}
                 temp="25 °C" 
-                icon={translateIcon(translateWeather(selectedData.morning_forecast)) || <Sun className="w-4 h-4 mb-1" />}
+                icon={translateIcon(translateWeather(selectedData.morning_forecast)) || <Sunny className="w-4 h-4 mb-1" />}
                 output={translateSolarOutput(selectedData.morning_forecast) || "High"}
               />
               <ForecastPill 
                 time="12:00" 
                 // weather={translateWeather(selectedData.afternoon_forecast) || "Thunderstorms"} 
                 temp="21 °C" 
-                icon={translateIcon(translateWeather(selectedData.afternoon_forecast)) || <CloudRain className="w-4 h-4 mb-1" />}
+                icon={translateIcon(translateWeather(selectedData.afternoon_forecast)) || <Thunderstorms className="w-4 h-4 mb-1" />}
                 output={translateSolarOutput(selectedData.afternoon_forecast) || "Low"}
               />
               <ForecastPill 
                 time="16:00" 
                 // weather={translateWeather(selectedData.summary_forecast) || "Thunderstorms"} 
                 temp="20 °C" 
-                icon={translateIcon(translateWeather(selectedData.summary_forecast)) || <CloudRain className="w-4 h-4 mb-1" />}
+                icon={translateIcon(translateWeather(selectedData.summary_forecast)) || <Thunderstorms className="w-4 h-4 mb-1" />}
                 output={translateSolarOutput(selectedData.summary_forecast) || "Low"}
               />
               <ForecastPill 
                 time="20:00" 
                 // weather={translateWeather(selectedData.night_forecast) || "Rain"} 
                 temp="22 °C" 
-                icon={translateIcon(translateWeather(selectedData.night_forecast)) || <CloudLightning className="w-4 h-4 mb-1" />}
+                icon={translateIcon(translateWeather(selectedData.night_forecast)) || <Rain className="w-4 h-4 mb-1" />}
                 output={translateSolarOutput(selectedData.night_forecast) || "Low"}
               />
             </div>
@@ -291,7 +295,7 @@ function NavIcon({ icon, isActive, onClick }) {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-gray-200 border-t border-gray-300 px-6 py-4 rounded-t-3xl shadow-lg z-50">
+      <nav className="fixed bottom-0 left-0 right-0 bg-gray-300 border-t border-gray-300 px-6 py-4 rounded-t-3xl shadow-lg z-50">
         <div className="flex justify-between items-center max-w-md mx-auto">
           <NavIcon 
             icon={<Home className="w-7 h-7" />} 
