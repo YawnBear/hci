@@ -131,18 +131,18 @@ export default function SolarDashboard() {
 function ForecastPill({ time, weather, temp, icon, output }) {
   return (
     <div className="flex flex-col items-center">
-      <div className="forecastbgcolor rounded-full py-4 px-1 w-full flex flex-col items-center justify-center space-y-1 h-32">
-        <span className="text-xs font-bold text-slate-900">{time}</span>
+      <div className="bg-[#615E5C] rounded-full py-4 px-1 w-full flex flex-col items-center justify-center space-y-1 h-32 border border-white">
+        <span className="text-xs text-[#F7E095]">{time}</span>
         <div className="flex flex-col items-center my-1">
           {icon}
-          <span className="text-xs font-bold text-slate-900">{weather}</span>
+          <span className="text-xs text-[#F7E095]">{weather}</span>
         </div>
-        <span className="text-xs font-bold text-slate-900">{temp}</span>
+        <span className="text-xs text-[#F7E095]">{temp}</span>
       </div>
       <div className="mt-2 text-center leading-tight">
-        <span className="text-[10px] font-medium text-slate-800 block">{output}</span>
-        <span className="text-[10px] font-medium text-slate-800 block">Solar</span>
-        <span className="text-[10px] font-medium text-slate-800 block">Output</span>
+        <span className="text-[10px] font-medium text-white block">{output}</span>
+        <span className="text-[10px] font-medium text-white block">Solar</span>
+        <span className="text-[10px] font-medium text-white block">Output</span>
       </div>
     </div>
   );
@@ -153,7 +153,7 @@ function NavIcon({ icon, isActive, onClick }) {
     <button 
       onClick={onClick}
       className={`transition-colors duration-200 ${
-        isActive ? 'text-black stroke-[2.5px]' : 'text-slate-500 hover:text-slate-700'
+        isActive ? 'text-[#FF784F] stroke-[2.5px]' : 'text-[#736A6A]'
       }`}
     >
       {icon}
@@ -172,11 +172,11 @@ function NavIcon({ icon, isActive, onClick }) {
 
       <main className="px-5 space-y-6">
         {/* Electricity Section */}
-        <section className="bg-gray-300 rounded-xl p-5 relative overflow-hidden">
-          <h2 className="text-lg font-medium text-slate-800 mb-2">Electricity</h2>
+        <section className="bg-[#615E5C] rounded-xl p-4 relative overflow-hidden border-1 border-[#FF784F]">
+          <h2 className="text-lg font-medium text-white mb-2">Electricity</h2>
           
-          <div className="flex justify-center items-center py-4">
-            <div className="relative w-48 h-48">
+          <div className="flex justify-center items-center py-2">
+            <div className="relative w-48 h-48 bg-[#242323] rounded-full">
               {/* Circular Progress SVG */}
               <svg className="w-full h-full transform -rotate-90">
                 {/* Track */}
@@ -184,7 +184,7 @@ function NavIcon({ icon, isActive, onClick }) {
                   cx="96"
                   cy="96"
                   r="80"
-                  stroke="white"
+                  stroke="#242323"
                   strokeWidth="12"
                   fill="transparent"
                   className="opacity-100"
@@ -193,12 +193,12 @@ function NavIcon({ icon, isActive, onClick }) {
                 <circle
                   cx="96"
                   cy="96"
-                  r="80"
-                  stroke="grey"
-                  strokeWidth="12"
+                  r="84"
+                  stroke="#F7E095"
+                  strokeWidth="9"
                   fill="transparent"
-                  strokeDasharray={502}
-                  strokeDashoffset={502 - (502 * 0.7)}
+                  strokeDasharray={541}
+                  strokeDashoffset={541 - (541 * 0.7)}
                   className="transition-all duration-1000 ease-out"
                   transform="rotate(180 96 96)"
                   strokeLinecap="round"
@@ -207,33 +207,30 @@ function NavIcon({ icon, isActive, onClick }) {
               
               {/* Center Text */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-5xl font-bold tracking-tight">70%</span>
+                <span className="text-white text-5xl tracking-tight">70%</span>
               </div>
 
               {/* Lightning Icon Badge */}
-              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-2 bg-gray-300 border-4 border-gray-200 rounded-full p-2">
-                <div className="bg-slate-800 rounded-full p-1">
-                   {/* Using slate-800 to contrast with the light icon, or purely black like image */}
+              <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 translate-y-2 bg-[#FF784F] border-4 border-[#FF784F] rounded-full p-2">
                    <Zap className="w-5 h-5 text-white fill-current" />
-                </div>
               </div>
             </div>
           </div>
         </section>
 
         {/* Panel Condition Section */}
-        <section className="bg-gray-300 rounded-xl p-5">
-          <h2 className="text-lg font-medium text-slate-800 mb-4">Panel Condition</h2>
+        <section className="bg-[#615E5C] rounded-xl p-5 border border-[#FF784F]">
+          <h2 className="text-lg font-medium text-white mb-4">Panel Condition</h2>
           
           <div className="grid grid-cols-2 gap-4">
             {[1, 2, 3, 4].map((panelId) => (
-              <div key={panelId} className="bg-white p-4 rounded-xl shadow-sm flex justify-between items-center">
+              <div key={panelId} className="bg-[#242323] p-4 rounded-xl shadow-sm flex justify-between items-center">
                 <div className="flex flex-col space-y-1">
-                  <span className="text-xs font-semibold text-slate-500">Panel {panelId}</span>
-                  <span className="text-sm font-bold text-slate-900">949kwh</span>
+                  <span className="text-xs font-semibold text-white">Panel {panelId}</span>
+                  <span className="text-sm text-white">949kwh</span>
                   <span className="text-xs font-medium text-green-600">Good</span>
                 </div>
-                <div className="bg-white rounded-md p-1.5">
+                <div className="bg-[#242323] rounded-md p-1.5">
                   <img src={`/solarPanel.png`} alt={`Panel ${panelId}`} className="ml-3 w-17 h-10" />
                 </div>
               </div>
@@ -242,12 +239,12 @@ function NavIcon({ icon, isActive, onClick }) {
         </section>
 
         {/* AI Estimation Section */}
-        <section className="bg-gray-300 rounded-xl p-5">
-          <h2 className="text-lg font-medium text-slate-800 mb-4">{city} Weather @{selectedData?.date ? formatDateToDayMonth(selectedData.date) : ""}</h2>
+        <section className="bg-[#615E5C] rounded-xl p-5 border border-[#FF784F]">
+          <h2 className="text-lg font-medium text-white mb-4">{city} Weather @{selectedData?.date ? formatDateToDayMonth(selectedData.date) : ""}</h2>
           
           {/* White Card Container */}
-          <div className="bgcolor rounded-2xl p-4">
-            <div className="grid grid-cols-4 gap-2">
+          <div className="bgcolor rounded-2xl p-4 text-[#F7E095]">
+            <div className="grid grid-cols-4 gap-4">
               <ForecastPill 
                 time="08:00" 
                 // weather={translateWeather(selectedData.morning_forecast) || "Sunny"}
@@ -281,12 +278,12 @@ function NavIcon({ icon, isActive, onClick }) {
 
           <div className="mt-4 text-left min-h-[1.5rem] flex items-center">
              {loadingEstimate ? (
-                <div className="flex items-center space-x-2 text-xs text-slate-600 font-medium">
+                <div className="flex items-center space-x-2 text-xs text-white font-medium">
                   <Loader2 className="w-3 h-3 animate-spin" />
                   <span>Analyzing weather data...</span>
                 </div>
              ) : (
-                <p className="text-xs text-slate-600 font-medium">
+                <p className="text-xs text-white font-medium">
                   {solarEstimate}
                 </p>
              )}
