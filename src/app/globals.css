@@ -24,3 +24,15 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.bgcolor {
+  background-color: #242323;
+}
+
+.navbar{
+  background-color: #353535;
+}
+
+.forecastbgcolor {
+  background-color: #615E5C;
+}

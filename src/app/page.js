@@ -131,7 +131,7 @@ export default function SolarDashboard() {
 function ForecastPill({ time, weather, temp, icon, output }) {
   return (
     <div className="flex flex-col items-center">
-      <div className="bg-gray-300 rounded-full py-4 px-1 w-full flex flex-col items-center justify-center space-y-1 h-32">
+      <div className="forecastbgcolor rounded-full py-4 px-1 w-full flex flex-col items-center justify-center space-y-1 h-32">
         <span className="text-xs font-bold text-slate-900">{time}</span>
         <div className="flex flex-col items-center my-1">
           {icon}
@@ -164,10 +164,10 @@ function NavIcon({ icon, isActive, onClick }) {
 
 
   return (
-    <div className="min-h-screen bg-white font-sans text-slate-900 pb-24">
+    <div className="min-h-screen bg-white font-sans text-slate-900 pb-24 bgcolor">
       {/* Header */}
       <header className="px-6 pt-8 pb-4">
-        <h1 className="text-3xl font-semibold tracking-tight">Home</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-white">Home</h1>
       </header>
 
       <main className="px-5 space-y-6">
@@ -246,7 +246,7 @@ function NavIcon({ icon, isActive, onClick }) {
           <h2 className="text-lg font-medium text-slate-800 mb-4">{city} Weather @{selectedData?.date ? formatDateToDayMonth(selectedData.date) : ""}</h2>
           
           {/* White Card Container */}
-          <div className="bg-white rounded-2xl p-4">
+          <div className="bgcolor rounded-2xl p-4">
             <div className="grid grid-cols-4 gap-2">
               <ForecastPill 
                 time="08:00" 
@@ -295,7 +295,7 @@ function NavIcon({ icon, isActive, onClick }) {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-gray-300 border-t border-gray-300 px-6 py-4 rounded-t-3xl shadow-lg z-50">
+      <nav className="fixed -bottom-1 left-0 right-0 border-t border-white px-6 py-4 shadow-lg z-50 navbar">
         <div className="flex justify-between items-center max-w-md mx-auto">
           <NavIcon 
             icon={<Home className="w-7 h-7" />} 
