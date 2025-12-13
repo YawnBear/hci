@@ -172,7 +172,7 @@ export default function SolarDashboard() {
     const oscillator = ctx.createOscillator();
     const gainNode = ctx.createGain();
 
-    oscillator.type = 'sawtooth';
+    oscillator.type = 'triangle';
     oscillator.frequency.setValueAtTime(220, ctx.currentTime); // Start pitch
     oscillator.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1); // Ramp up
     
