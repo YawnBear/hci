@@ -15,3 +15,5 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 Remember to inspect the page, and set it to mobile view as the website was intended to be a mobile application.
+
+It requires a .env.local to store Gemini API key, GEMINI_API_KEY.
