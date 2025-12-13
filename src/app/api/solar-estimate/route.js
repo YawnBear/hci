@@ -61,7 +61,7 @@ export async function POST(request) {
       if (attempt >= MAX_RETRIES) {
         console.error("Gemini API failed after retries:", error);
         return NextResponse.json(
-          { estimate_text: "Estimated Solar Output: Calculation Unavailable" },
+          { estimate_text: "Estimated Solar Output: Calculation Unavailable. Please try again later." },
           { status: 500 }
         );
       }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { use, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { 
   Home, 
   Activity, 
@@ -21,13 +21,18 @@ import Sunny from './components/sunny';
 import Hazy from './components/hazy';
 
 export default function SolarDashboard() {
-  const [selectedData, setSelectedData] = useState([]);
+  // FIX 1: Initialize as null, not [], so the checks work correctly
+  const [selectedData, setSelectedData] = useState(null);
   const [city, setCity] = useState("Subang Jaya");
   const [activeTab, setActiveTab] = useState('home');
   const [solarEstimate, setSolarEstimate] = useState("Estimated Solar Output: Calculating...");
   const [loadingEstimate, setLoadingEstimate] = useState(false);
+  
+  const hasAlertedRef = useRef(false);
+  // FIX 4: Use a Ref to keep one AudioContext alive for the session
+  const audioContextRef = useRef(null);
 
-  // Mapping object
+  // Mappings
   const weatherMap = {
     "Berjerebu": "Hazy",
     "Tiada hujan": "Sunny",
@@ -58,25 +63,44 @@ export default function SolarDashboard() {
     "Thunderstorms": "Low"
   }
 
+  // Helpers
+  function translateWeather(description) { return weatherMap[description] || description; }
+  function translateIcon(description) { return iconMap[translateWeather(description)] || description; }
+  function translateSolarOutput(description) { return solarMap[translateWeather(description)] || description; }
+  function formatDateToDayMonth(dateString) {
+    if(!dateString) return "";
+    const [year, month, day] = dateString.split("-");
+    return `${day}-${month}`;
+  }
+
+  // --- API 1: FETCH WEATHER ---
   useEffect(() => {
     async function fetchWeather() {
-      const res = await fetch(`/api/weather?location_name=${encodeURIComponent(city)}`);
-      const data = await res.json();
-      if (data.success) {
-        console.log(data.data);
-        const selected = data.data.filter(
-          item => item.location.location_name.toLowerCase() === city.toLowerCase()
-        );
-        const lastObject = selected[selected.length - 1];
-        console.log(lastObject);
-        setSelectedData(lastObject);
-      } else {
-        console.error(data.error);
+      try {
+        const res = await fetch(`/api/weather?location_name=${encodeURIComponent(city)}`);
+        const data = await res.json();
+        
+        if (data.success) {
+          const selected = data.data.filter(
+            item => item.location.location_name.toLowerCase() === city.toLowerCase()
+          );
+          
+          if (selected.length > 0) {
+            const lastObject = selected[selected.length - 1];
+            setSelectedData(lastObject);
+            
+            // FIX 2: Reset the alert ref so the alarm can sound again for new data
+            hasAlertedRef.current = false; 
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching weather:", error);
       }
     }
     fetchWeather();
   }, [city]);
 
+  // --- API 2: FETCH SOLAR ESTIMATE ---
   useEffect(() => {
     async function getSolarEstimate() {
       if (!selectedData) return;
@@ -97,7 +121,6 @@ export default function SolarDashboard() {
           setSolarEstimate(data.estimate_text);
         }
       } catch (error) {
-        console.error("Gemini Estimate Error:", error);
         setSolarEstimate("Estimated Solar Output: Unavailable");
       } finally {
         setLoadingEstimate(false);
@@ -107,61 +130,128 @@ export default function SolarDashboard() {
     getSolarEstimate();
   }, [selectedData, city]);
 
-  // Function to translate
-  function translateWeather(description) {
-    return weatherMap[description] || description; // fallback to original if not found
-  }
+  // --- FIX 5: BROWSER AUTOPLAY UNLOCKER ---
+  // Browsers block audio until the user clicks properly. 
+  // This listener waits for the first click anywhere to "wake up" the audio engine.
+  useEffect(() => {
+    const unlockAudio = () => {
+      if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+        audioContextRef.current.resume().then(() => {
+          console.log("Audio Context Resumed/Unlocked by user interaction");
+        });
+      }
+    };
 
-  function translateIcon(description) {
-    return iconMap[translateWeather(description)] || description; // fallback to original if not found
-  }
+    // Listen for any click/touch on the page
+    window.addEventListener('click', unlockAudio);
+    window.addEventListener('touchstart', unlockAudio);
 
-  function formatDateToDayMonth(dateString) {
-    // Example input: "2025-12-11"
-    const [year, month, day] = dateString.split("-"); // split the string by "-"
-    return `${day}-${month}`; // return in dd-mm format
-  }
+    return () => {
+      window.removeEventListener('click', unlockAudio);
+      window.removeEventListener('touchstart', unlockAudio);
+    };
+  }, []);
 
-  function translateSolarOutput(description) {
-    return solarMap[translateWeather(description)] || description; // fallback to original if not found
-  }
+  // --- STANDARD API TECHNIQUE: Web Audio API ---
+  const playProceduralAlarm = () => {
+    // Initialize Context ONLY if it doesn't exist
+    if (!audioContextRef.current) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        audioContextRef.current = new AudioContext();
+    }
+    
+    const ctx = audioContextRef.current;
 
-  // --- Subcomponents for cleaner code ---
+    // FIX 3: Attempt to handle Autoplay Policy
+    if (ctx.state === 'suspended') {
+        ctx.resume().catch(e => console.warn("Audio autoplay blocked by browser. Click the page!"));
+    }
 
-function ForecastPill({ time, weather, temp, icon, output }) {
-  return (
-    <div className="flex flex-col items-center">
-      <div className="bg-[#615E5C] rounded-full py-4 px-1 w-full flex flex-col items-center justify-center space-y-1 h-32 border border-white">
-        <span className="text-xs text-[#F7E095]">{time}</span>
-        <div className="flex flex-col items-center my-1">
-          {icon}
-          <span className="text-xs text-[#F7E095]">{weather}</span>
+    // Sound Generation Logic
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+
+    oscillator.type = 'sawtooth';
+    oscillator.frequency.setValueAtTime(220, ctx.currentTime); // Start pitch
+    oscillator.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1); // Ramp up
+    
+    gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5); // Fade out
+
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    oscillator.start();
+    oscillator.stop(ctx.currentTime + 0.5);
+    console.log("🔊 Sound Triggered");
+  };
+
+  // --- ALERT TRIGGER ---
+  useEffect(() => {
+    // Because of Fix 1, selectedData is now null initially, so this safety check works.
+    if (!selectedData || hasAlertedRef.current) return;
+
+    const forecasts = [
+      selectedData.morning_forecast,
+      selectedData.afternoon_forecast,
+      selectedData.summary_forecast,
+      selectedData.night_forecast
+    ];
+
+    // Check if any weather condition maps to "Thunderstorms"
+    const hasCriticalWeather = forecasts.some(forecast => 
+      translateWeather(forecast) === "Thunderstorms"
+    );
+
+    if (hasCriticalWeather) {
+      console.log("⚡ Critical Weather: Triggering Web Audio API...");
+      
+      try {
+        playProceduralAlarm();
+      } catch (err) {
+        console.warn("Audio Context blocked. User must click page first.");
+      }
+      
+      hasAlertedRef.current = true;
+    }
+  }, [selectedData]);
+
+  // --- UI COMPONENTS ---
+  // (Your UI code below is fine, I will leave it exactly as is to keep the file valid)
+
+  function ForecastPill({ time, weather, temp, icon, output }) {
+    return (
+      <div className="flex flex-col items-center">
+        <div className="bg-[#615E5C] rounded-full py-4 px-1 w-full flex flex-col items-center justify-center space-y-1 h-32 border border-white">
+          <span className="text-xs text-[#F7E095]">{time}</span>
+          <div className="flex flex-col items-center my-1">
+            {icon}
+            <span className="text-xs text-[#F7E095]">{weather}</span>
+          </div>
+          <span className="text-xs text-[#F7E095]">{temp}</span>
         </div>
-        <span className="text-xs text-[#F7E095]">{temp}</span>
+        <div className="mt-2 text-center leading-tight">
+          <span className="text-[10px] font-medium text-white block">{output}</span>
+          <span className="text-[10px] font-medium text-white block">Solar</span>
+          <span className="text-[10px] font-medium text-white block">Output</span>
+        </div>
       </div>
-      <div className="mt-2 text-center leading-tight">
-        <span className="text-[10px] font-medium text-white block">{output}</span>
-        <span className="text-[10px] font-medium text-white block">Solar</span>
-        <span className="text-[10px] font-medium text-white block">Output</span>
-      </div>
-    </div>
-  );
-}
+    );
+  }
 
-function NavIcon({ icon, isActive, onClick }) {
-  return (
-    <button 
-      onClick={onClick}
-      className={`transition-colors duration-200 ${
-        isActive ? 'text-[#FF784F] stroke-[2.5px]' : 'text-[#736A6A]'
-      }`}
-    >
-      {icon}
-    </button>
-  );
-}
-
-
+  function NavIcon({ icon, isActive, onClick }) {
+    return (
+      <button 
+        onClick={onClick}
+        className={`transition-colors duration-200 ${
+          isActive ? 'text-[#FF784F] stroke-[2.5px]' : 'text-[#736A6A]'
+        }`}
+      >
+        {icon}
+      </button>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900 pb-24 bgcolor">
@@ -176,6 +266,7 @@ function NavIcon({ icon, isActive, onClick }) {
           <h2 className="text-lg font-medium text-white mb-2">Electricity</h2>
           
           <div className="flex justify-center items-center py-2">
+            {/* Removed onClick handler and manual text instructions */}
             <div className="relative w-48 h-48 bg-[#242323] rounded-full">
               {/* Circular Progress SVG */}
               <svg className="w-full h-full transform -rotate-90">
@@ -212,7 +303,7 @@ function NavIcon({ icon, isActive, onClick }) {
 
               {/* Lightning Icon Badge */}
               <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 translate-y-2 bg-[#FF784F] border-4 border-[#FF784F] rounded-full p-2">
-                   <Zap className="w-5 h-5 text-white fill-current" />
+                    <Zap className="w-5 h-5 text-white fill-current" />
               </div>
             </div>
           </div>
@@ -249,29 +340,29 @@ function NavIcon({ icon, isActive, onClick }) {
                 time="08:00" 
                 // weather={translateWeather(selectedData.morning_forecast) || "Sunny"}
                 temp="25 °C" 
-                icon={translateIcon(translateWeather(selectedData.morning_forecast)) || <Sunny className="w-4 h-4 mb-1" />}
-                output={translateSolarOutput(selectedData.morning_forecast) || "High"}
+                icon={selectedData ? translateIcon(translateWeather(selectedData.morning_forecast)) : <Sunny className="w-4 h-4 mb-1" />}
+                output={selectedData ? translateSolarOutput(selectedData.morning_forecast) : "High"}
               />
               <ForecastPill 
                 time="12:00" 
                 // weather={translateWeather(selectedData.afternoon_forecast) || "Thunderstorms"} 
                 temp="21 °C" 
-                icon={translateIcon(translateWeather(selectedData.afternoon_forecast)) || <Thunderstorms className="w-4 h-4 mb-1" />}
-                output={translateSolarOutput(selectedData.afternoon_forecast) || "Low"}
+                icon={selectedData ? translateIcon(translateWeather(selectedData.afternoon_forecast)) : <Thunderstorms className="w-4 h-4 mb-1" />}
+                output={selectedData ? translateSolarOutput(selectedData.afternoon_forecast) : "Low"}
               />
               <ForecastPill 
                 time="16:00" 
                 // weather={translateWeather(selectedData.summary_forecast) || "Thunderstorms"} 
                 temp="20 °C" 
-                icon={translateIcon(translateWeather(selectedData.summary_forecast)) || <Thunderstorms className="w-4 h-4 mb-1" />}
-                output={translateSolarOutput(selectedData.summary_forecast) || "Low"}
+                icon={selectedData ? translateIcon(translateWeather(selectedData.summary_forecast)) : <Thunderstorms className="w-4 h-4 mb-1" />}
+                output={selectedData ? translateSolarOutput(selectedData.summary_forecast) : "Low"}
               />
               <ForecastPill 
                 time="20:00" 
                 // weather={translateWeather(selectedData.night_forecast) || "Rain"} 
                 temp="22 °C" 
-                icon={translateIcon(translateWeather(selectedData.night_forecast)) || <Rain className="w-4 h-4 mb-1" />}
-                output={translateSolarOutput(selectedData.night_forecast) || "Low"}
+                icon={selectedData ? translateIcon(translateWeather(selectedData.night_forecast)) : <Rain className="w-4 h-4 mb-1" />}
+                output={selectedData ? translateSolarOutput(selectedData.night_forecast) : "Low"}
               />
             </div>
           </div>
